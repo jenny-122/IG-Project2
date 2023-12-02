@@ -23,6 +23,8 @@ public class TriggerUpdates : MonoBehaviour
     string defaultTag = "Weak";
     string powerUpTag = "Strong";
 
+    public Vector3 respawnPoint = new Vector3(0, 1, 0); // Reference to the respawn point
+
     void Start()
     {
         playerRb = GetComponent<Rigidbody>();
@@ -83,6 +85,7 @@ public class TriggerUpdates : MonoBehaviour
             {
                 playerDamagedSound.Play();
                 livesCount -= 1;
+                RespawnPlayer(Player);
                 SetLivesLeftText();
             }
             else if (gameObject.tag == powerUpTag)
@@ -157,5 +160,13 @@ public class TriggerUpdates : MonoBehaviour
         ChgTag(Player, defaultTag);
         powerUpTimer = 0f;
         SetPowerUpTimerText(); // Ensure the UI reflects the end of the power-up
+    }
+    void RespawnPlayer(GameObject obj)
+    {
+        // Reset player position to the respawn point
+        obj.transform.position = respawnPoint;
+        //transform.rotation = respawnPoint.rotation;
+
+        Debug.Log("Player Respawned");
     }
 }
