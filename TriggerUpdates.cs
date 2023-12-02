@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class TriggerUpdates : MonoBehaviour
@@ -25,6 +26,11 @@ public class TriggerUpdates : MonoBehaviour
 
     public Vector3 respawnPoint = new Vector3(0, 1, 0); // Reference to the respawn point
 
+    bool obj1, obj2, obj3 = false;
+
+    bool gameLost = false;
+    bool gameWin = false;
+
     void Start()
     {
         playerRb = GetComponent<Rigidbody>();
@@ -49,6 +55,7 @@ public class TriggerUpdates : MonoBehaviour
 
     void Update()
     {
+        //if powerUp activates
         if (isPoweredUp)
         {
             powerUpTimer -= Time.deltaTime;
@@ -60,6 +67,7 @@ public class TriggerUpdates : MonoBehaviour
                 Debug.Log("Power-up expired");
             }
         }
+
     }
 
     void OnTriggerEnter(Collider other)
@@ -71,6 +79,10 @@ public class TriggerUpdates : MonoBehaviour
             powerUp += 1;
             SetPowerUpText();
             StartPowerUp();
+            if (powerUp == 3) { 
+            obj1 = true;
+            checkWin();
+            }
         }
         else if (other.gameObject.CompareTag("Chest"))
         {
@@ -78,15 +90,34 @@ public class TriggerUpdates : MonoBehaviour
             other.gameObject.SetActive(false);
             chestsCollected += 1;
             SetChestsCollectedText();
+            if (chestsCollected == 3)
+            {
+                obj2 = true;
+                checkWin();
+            }
         }
         else if (other.gameObject.CompareTag("Enemy"))
         {
             if (gameObject.tag == defaultTag)
             {
-                playerDamagedSound.Play();
-                livesCount -= 1;
-                RespawnPlayer(Player);
-                SetLivesLeftText();
+                if (livesCount > 1)
+                {
+                    playerDamagedSound.Play();
+                    livesCount -= 1;
+                    RespawnPlayer(Player);
+                    SetLivesLeftText();
+                }
+                else if (livesCount == 1) {
+                    playerDamagedSound.Play();
+                    livesCount -= 1;
+                    SetLivesLeftText();
+                    Debug.Log("This should set the gameLost bool = true; starts gameLost process");
+                    chgScene("LoseScene");
+                } else if (livesCount == 0)
+                {
+                    Debug.Log("Stop livesLeft count down.");
+                }
+
             }
             else if (gameObject.tag == powerUpTag)
             {
@@ -94,7 +125,11 @@ public class TriggerUpdates : MonoBehaviour
                 other.gameObject.SetActive(false);
                 kills += 1;
                 SetKillsText();
-                //Debug.Log("Still missing a text update function for Kills");
+                if (kills == 3)
+                {
+                    obj3 = true;
+                    checkWin();
+                }
             }
         }
     }
@@ -168,5 +203,18 @@ public class TriggerUpdates : MonoBehaviour
         //transform.rotation = respawnPoint.rotation;
 
         Debug.Log("Player Respawned");
+    }
+
+    void checkWin() {
+        if (obj1 && obj2 && obj3)
+        {
+            gameWin = true;
+            Debug.Log("gameWin is now true");
+            chgScene("WinScene");
+        }
+    }
+
+    void chgScene(string scene) {
+        SceneManager.LoadScene(scene);
     }
 }
